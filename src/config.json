@@ -1,9 +1,9 @@
 {
     "onedrive": {
-        "tenant_id": null,
+        "tenant_id": "common",
         "client_id": null,
         "client_secret_value": null,
-        "redirect_url": "http://localhost:8080",
+        "redirect_url": "http://localhost:8081",
         "refresh_token": null
     }
 }
