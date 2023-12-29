@@ -45,6 +45,18 @@ While working on semantic model it is critical to make sure that the model is ex
 While not strictly related to semantic model creation in PowerBI, we should make sure that the mapping from Excel files sheets to semantic model dataset name and table columns is stored in a place that can be easily accessed and used by the ETL jobs.
 
 #### ETL jobs creation
-Currently this is a big unknown. It is unclear if Reach to Teach team has an existing IT system in place. Is there anything that can be deployed on-prem, could we propose using something like Azure and some of the relevant services.
+Python is the language of choice for ETL jobs. The main reason for this is that Python is a very popular language and RTT team is already familiar with it. In addition, Python has a very rich ecosystem of libraries that can be used for data processing. For example, `Pandas`` is a very popular library that can be used for data processing and it has a very rich set of features that can be used for data processing, including reading Excel files, CSV files, etc.
 
-Another area that needs some clarification if there is a preferred programming language that should be used for the ETL jobs. During one of our discussions it was mentioned that Python is a preferred language, but it is not clear if this is a hard requirement or just a preference.
+The ETL jobs will be event driven. A typical event job would look like this:
+1. A new file is uploaded to the input folder
+2. The ETL job is triggered
+3. The ETL job reads the file and transforms it
+4. The ETL job stores the transformed file in the output folder
+5. The ETL job uploads the transformed file to PowerBI
+
+It should be noted that the "transform" step is loosely defined. The transformation can be as simple as renaming columns or as complex as joining multiple tables and creating a new table. The transformation step should be defined based on the semantic model and the data that is available in the input file.
+
+## Recommendations
+While in this document we have talked about "input" and "output" folders, "input" and "output" files, it should be noted that these are used in a loose sense. The recommendation is to rely on Azure Cloud services to store the files. For example, Azure Blob Storage can be used to store the files. The main reason for this is that Azure Blob Storage is a very cost effective way to store files and it is very easy to integrate with it. For example, Azure Blob Storage can be easily integrated with PowerBI and it can be used as a data source for PowerBI reports and dashboards.
+
+Also the ETL jobs can be easily deployed as Azure Functions and they can be triggered by different events, like a new file has been uploaded, updated, removed, etc. This will allow us to have a solution that will scale based on the load and will be very cost effective.
