@@ -7,21 +7,22 @@ As part of the MIS ProBono project we have learned the Reach to Teach team is lo
 - "How many boys and girls are in a particular grade?"
 - etc
 
-After several discussions with Reach to Teach team it became clear that while initially we were talking about dashboards and visualizations, it became apparent that they are looking for help in building a Data Management solution. As far as as we were able to observe, the data is currently stored in Excel files and is not easily accessible. The goal of this project is to build a solution that would allow Reach to Teach team to easily access the data and answer the questions they have.
+After several discussions with Reach to Teach team it became clear that while initially we were talking about dashboards and visualizations, it became apparent that they are looking for help in building a Data Management solution. As far as as we were able to observe, the data is currently stored in Excel files and is not easily accessible. The goal of this project is to build a reliable solution that would allow Reach to Teach team to easily access the data and answer the questions they have.
 
-## Data Management platform - WIP
-While talking to Reach to Teach team we have identified that they are thinking in terms of use cases. One of the first things when trying to use any system is to be able to provide an organization mode that would make sense for the users of the system. Reach to Teach team have access to PowerBI and after several explorations we have decided to use PowerBI as a platform for the Data Management solution. The main reason for this is that PowerBI is already used by Reach to Teach team, they have access to it at no additional cost and they are familiar with it.
+## Data Management platform - Alex to split in to setup and day to day use for RTT
+While talking to Reach to Teach team we have identified that they are thinking in terms of use cases. One of the first things when trying to use any system is to be able to provide an organization mode that would make sense for the users of the system. Reach to Teach team have access to Microsoft Services and after several explorations we have decided to use both Azure and PowerBI as part of their Data Management solution. The main reasons for this are that both tools are accessible by Reach to Teach team today, they have access to them at no / minimum cost and they are familiar with them.
 
 A few assumptions that we are making regarding Reach to Teach team access to Microsoft technologies:
-- Access to Active Directory - this will be used for user and access management
+- Access to Azure - compute, storage and Active Directory (user and access management)
 - Access to PowerBI Service - this will be used for data upload, reports, dashboards, etc
 
 At a very high level any use case would go through the following flow:
 1. Create a PowerBI workspace - a workspace is a container for datasets, tables, dashboards, reports for a particular use case. One nice feature of PowerBI workspaces is that it allows you to assign roles to users and control who has access to the workspace. The assumption here is that we already know the users and roles.
-2. Create a semantic model aka datasets and tables - to be able to make sense of the data that has to be analyzed it is necessary to create a semantic model. A semantic model would consist of one or more datasets along with the associated tables. An important step at this stage is identifying which tables are dimension/lookup table and which ones are fact tables. Ideally the semantic model should be created and stored in a format that is usable from a Git repo. For example using something like YAML or JSON. This would allow us to track changes to the semantic model and also allow us to use the same semantic model in different workspaces.
-3. Create input, output, error folders - these input folder will be used to store the raw input Excel/CSV files, the output folder will be used to store files in the standard format and the error folder will be used to store files that have errors and might need reprocessing. To make things easier these folder names should be derived from the workspace name, so it is easier to identify which folders belong to which workspace.
-4. Create/reuse ETL jobs - having the semantic model and the input, output, error folders it is possible to create ETL jobs that would read the input files, transform them, store them in the output folder and then upload data to PowerBI. The ETL jobs should be created in a way that they can be easily reused in different workspaces. For example, the ETL jobs should be stored in a Git repo and should be parameterized so that they can be easily reused in different workspaces.
-5. Create PowerBI reports/dashboards/apps - once the data flow has been configured and data is continuously flowing into PowerBI, analysts can create reports, dashboards, etc for final consumption.
+2. Create a semantic model aka datasets and tables - to be able to make sense of the data that has to be analyzed it is necessary to create a semantic model. A semantic model would consist of one or more datasets along with the associated tables. An important step at this stage is identifying which tables are dimension/lookup table and which ones are fact tables. Ideally the semantic model should be created and stored in a format that is usable from a Git repo. For example using something like YAML or JSON. This would allow us to track changes to the semantic model and also allow us to use the same semantic model in different workspaces. Note: tables need to be sanitized before they are uploaded into BI (this is taken care of the Python script provided).
+3. Create input, output, error folders (on Azure blob storage) - these input folder will be used to store the raw input Excel/CSV files, the output folder will be used to store files in the standard format and the error folder will be used to store files that have errors and might need reprocessing. To make things easier these folder names should be derived from the workspace name, so it is easier to identify which folders belong to which workspace.
+4. Create/reuse ETL jobs (on Azure) - having the semantic model and the input, output, error folders it is possible to create ETL jobs that would read the input files, transform and store them in Azure storage. The ETL jobs should be created in a way that they can be easily reused in different workspaces. For example, the ETL jobs should be stored in a Git repo and should be parameterized so that they can be easily reused in different workspaces.
+5. Download files and upload to One Drive manually, so that they can be uploaded to PowerBI. 
+6. Create PowerBI reports/dashboards/apps - once the data flow has been configured and data is continuously flowing into PowerBI, analysts can create reports, dashboards, etc for final consumption.
 
 ### Use case management in PowerBI
 
@@ -32,7 +33,7 @@ As it was mentioned previously, a use cases will be mapped to a PowerBI workspac
 3. User group is assigned to the workspace
 4. Users within the user group are assigned to the workspace with the appropriate role
 
-#### Semantic model creation
+#### Semantic model creation - to be completed for each use case / file
 To make sense of data, a semantic model is a must. While it might sound like a lot of work, a semantic model can be easily derived from the Excel files that will be uploaded for a particular use case.
 
 The whole process of creating a semantic model can be broken down into the following steps:
@@ -57,7 +58,7 @@ The ETL jobs will be event driven. A typical event job would look like this:
 It should be noted that the "transform" step is loosely defined. The transformation can be as simple as renaming columns or as complex as joining multiple tables and creating a new table. The transformation step should be defined based on the semantic model and the data that is available in the input file.
 
 ## Recommendations
-While in this document we have talked about "input" and "output" folders, "input" and "output" files, it should be noted that these are used in a loose sense. The recommendation is to rely on Azure Cloud services to store the files. For example, Azure Blob Storage can be used to store the files. The main reason for this is that Azure Blob Storage is a very cost effective way to store files and it is very easy to integrate with it. For example, Azure Blob Storage can be easily integrated with PowerBI and it can be used as a data source for PowerBI reports and dashboards.
+While in this document we have talked about "input" and "output" folders, "input" and "output" files, it should be noted that these are used in a loose sense. The recommendation is to rely on Azure Cloud services to store the files. For example, Azure Blob Storage can be used to store the files. The main reason for this is that Azure Blob Storage is a very cost effective way to store files and it is very easy to integrate with it. For example, Azure Blob Storage can be easily integrated with PowerBI and it can be used as a data source for PowerBI reports and dashboards. CHECK WITH ARTUR
 
 Also the ETL jobs can be easily deployed as Azure Functions and they can be triggered by different events, like a new file has been uploaded, updated, removed, etc. This will allow us to have a solution that will scale based on the load and will be very cost effective.
 
