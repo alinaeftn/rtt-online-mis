@@ -21,11 +21,11 @@ def process_raw_excel(raw_data: bytes) -> bytes:
 app = func.FunctionApp()
 
 @app.blob_trigger(arg_name="blob", path="inputcontainer/{name}",
-                               connection="BlobStorageConnectionString")
+                               connection="AzureWebJobsStorage")
 @app.blob_input(arg_name="inputblob", path="inputcontainer/{name}",
-                            connection="BlobStorageConnectionString", data_type=func.DataType.BINARY)
+                            connection="AzureWebJobsStorage", data_type=func.DataType.BINARY)
 @app.blob_output(arg_name="outputblob", path="outputcontainer/{name}",
-                             connection="BlobStorageConnectionString", data_type=func.DataType.BINARY)
+                             connection="AzureWebJobsStorage", data_type=func.DataType.BINARY)
 def blob_trigger(blob: func.InputStream, inputblob: bytes, outputblob: func.Out[bytes]):
     logging.info(f"Python blob trigger function starting for blob: "
                 f"Name: {blob.name}")

@@ -60,3 +60,60 @@ It should be noted that the "transform" step is loosely defined. The transformat
 While in this document we have talked about "input" and "output" folders, "input" and "output" files, it should be noted that these are used in a loose sense. The recommendation is to rely on Azure Cloud services to store the files. For example, Azure Blob Storage can be used to store the files. The main reason for this is that Azure Blob Storage is a very cost effective way to store files and it is very easy to integrate with it. For example, Azure Blob Storage can be easily integrated with PowerBI and it can be used as a data source for PowerBI reports and dashboards.
 
 Also the ETL jobs can be easily deployed as Azure Functions and they can be triggered by different events, like a new file has been uploaded, updated, removed, etc. This will allow us to have a solution that will scale based on the load and will be very cost effective.
+
+## Azure Function App Setup
+This section serves as a guidebook on how to use the code in this repository and deploy it to an Azure Function that will be able to run the flow described at [ETL Jobs section](#etl-jobs-creation).
+
+### Prerequisites
+* Working account on [Azure](https://portal.azure.com)
+* [Visual Studio Code](https://code.visualstudio.com/download)
+* [Azure Functions](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) extension for Visual Studio Code
+* Clone the repo locally
+
+
+### Creating an Azure Function
+After installing VSCode and the necessary extensions, open the project in VSCode, and log into your Azure account using the Azure extension from VSCode.
+At this point, you should be able to see a left pane similar to the one below:
+
+![Azure Extension VSCode](docs/img/vscode_extension.png)
+
+Use the `Create Function App in Azure...` option from the pane and follow the instructions: provide a name like `etl-rtt-function` or something similar, python runtime (Python 3.9 has been tested for this) and a region (e.g. US EAST).
+
+After the creation process finishes, you should be able to see your newly created resource group in Azure, like in the figure below. A couple of resources that are necessary in order for the Azure Function App to work, please validate you have the following:
+* an App Service Plan
+* an Application Insights
+* a Storage Account
+* a Function App
+
+![Resource Group for Azure Function App](docs/img/resource_group.png)
+
+### Deploying Python code to Azure Function
+
+The Function App resource and its dependencies should be created in Azure at this stage. The next step is deploying the Python code to the Azure Function App. This can be done from VSCode as well. Using the same extension, use `Resource` tab from the left panel to select the function app that we've just created previously. Right click on it an use the `Deploy to Function App...` option to deploy the code. Use the figure below for reference:
+
+![Deploy code to function](docs/img/deploy_to_function.png)
+
+If everything runs smoothly, a success prompt should appear in VS Code.
+
+### Testing the Function App
+At this point, we have managed to both create the Function App resource in Azure, as well as deploy the Python code to that Function.
+
+The last step we need to do is to test it.
+
+For some context, the Function we have just deployed in the previous steps is configured to trigger execution when a blob (generic term for a data e.g. a file) is uploaded in a certain blob container. When an Excel file is uploaded in the container `inputcontainer`, the Function is triggered, executes (reads and processes the excel file that was uploaded) and writes the resulting Excel file in another container `outputcontainer`.
+
+We first need to create those two container needed for input and output data.
+In order to do this, we visit the Storage Accounts page in Azure Portal, and find the Storage Account that was created as part of [this stage](#creating-an-azure-function). It should have the same name as the one specified during the creation step (e.g. `etlrttfunction`). Access that Storage Account and create the two needed containers. Use the figure below for reference:
+![Storage Containers](/docs/img/storage_account.png)
+
+
+After having setup the needed containers, the only thing left to do is to use the demo data to trigger the Function and see how it works.
+In the Azure Portal UI, go to the `inputcontainer` blob container we have just created, and click on `Upload`. Then, either Drag and Drop or browse to the file `test-data/use-case.xlsx`, and upload it. 
+
+After the upload is complete, it will take a while for the Function to be triggered and to finish executing (about 1-2 minutes). After those few minutes pass, check the `outputcontainer` for any files there. If the Function executes successfully, a slightly transformed version of the original excel file should appear there.
+
+> [!WARNING]  
+> This code is for demo purposes only and not ready for production use.
+
+> [!NOTE]  
+> The Function code is only a proof-of-concept and does not peform any complex processing of the excel file besides filtering of a certain column. We advise that RTT should update the transformation code according to their needs / use-cases in order to sanitize and standardize the data in order to reach a desired output file.
